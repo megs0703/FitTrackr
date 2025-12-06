@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: true,
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://fittrackr-frontend.onrender.com', 'https://fittrackr.onrender.com']
+    : true,
   credentials: true
 }));
 app.use(express.json());

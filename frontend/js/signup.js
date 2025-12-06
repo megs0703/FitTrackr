@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:5000';
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000' 
+  : 'https://fittrackr-backend.onrender.com';
 
 const form = document.getElementById('signupForm');
 const nameInput = document.getElementById('name');
