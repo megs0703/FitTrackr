@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - FitTrackr</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .fade-in { animation: fadeIn 0.5s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .floating-label { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); transition: all 0.3s; pointer-events: none; color: #9ca3af; }
+    .input-field:focus ~ .floating-label, .input-field:not(:placeholder-shown) ~ .floating-label { top: -10px; font-size: 12px; color: #3b82f6; background: white; padding: 0 4px; }
+    .toast { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 8px; color: white; z-index: 1000; animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+    .spinner { border: 3px solid #f3f4f6; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 fade-in">
+    <h1 class="text-3xl font-bold text-gray-800 text-center mb-2">FitTrackr</h1>
+    <p class="text-gray-500 text-center mb-8">Welcome back!</p>
+    
+    <form id="loginForm" class="space-y-6">
+      <div class="relative">
+        <input type="email" id="email" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder=" " required>
+        <label for="email" class="floating-label">Email Address</label>
+        <p id="emailError" class="text-red-500 text-sm mt-1 hidden">Invalid email format</p>
+      </div>
+
+      <div class="relative">
+        <input type="password" id="password" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder=" " required>
+        <label for="password" class="floating-label">Password</label>
+        <p id="passwordError" class="text-red-500 text-sm mt-1 hidden">Password is required</p>
+      </div>
+
+      <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center">
+        <span id="btnText">Login</span>
+        <div id="spinner" class="spinner hidden ml-2"></div>
+      </button>
+    </form>
+
+    <p class="text-center text-gray-600 mt-6">
+      Don't have an account? <a href="signup.html" class="text-blue-600 hover:underline font-semibold">Sign Up</a>
+    </p>
+  </div>
+
+  <script src="js/login.js"></script>
+</body>
+</html>
