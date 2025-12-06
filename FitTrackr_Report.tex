@@ -1,0 +1,535 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% Code listing style
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red}
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{FitTrackr}
+\lhead{Health \& Fitness Progress Tracker}
+\rfoot{Page \thepage}
+
+\title{\textbf{FitTrackr} \\ Health \& Fitness Progress Tracker \\ \large Web Application Development Report}
+\author{Your Name \\ Your Institution}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Abstract}
+FitTrackr is a modern, full-stack web application designed to help users track their fitness progress. The application features secure user authentication, a responsive dashboard, and real-time form validation. Built using HTML, TailwindCSS, JavaScript for the frontend, and Node.js with Express.js for the backend, it demonstrates best practices in web development, security, and user experience design.
+
+\section{Introduction}
+
+\subsection{Project Overview}
+FitTrackr is a comprehensive health and fitness tracking platform that enables users to monitor their fitness journey through an intuitive web interface. The application provides secure user registration, authentication, and a personalized dashboard for tracking fitness metrics.
+
+\subsection{Objectives}
+\begin{itemize}
+    \item Develop a secure user authentication system
+    \item Create an intuitive and responsive user interface
+    \item Implement real-time form validation
+    \item Design a scalable backend architecture
+    \item Ensure data security and privacy
+\end{itemize}
+
+\subsection{Scope}
+The project encompasses:
+\begin{itemize}
+    \item User registration and login functionality
+    \item Password encryption using bcrypt
+    \item Session-based authentication
+    \item Responsive dashboard with fitness tracking cards
+    \item MySQL database integration
+    \item RESTful API design
+\end{itemize}
+
+\section{Technology Stack}
+
+\subsection{Frontend Technologies}
+\begin{itemize}
+    \item \textbf{HTML5}: Semantic markup for structure
+    \item \textbf{TailwindCSS}: Utility-first CSS framework for styling
+    \item \textbf{JavaScript (ES6+)}: Client-side logic and API integration
+\end{itemize}
+
+\subsection{Backend Technologies}
+\begin{itemize}
+    \item \textbf{Node.js}: JavaScript runtime environment
+    \item \textbf{Express.js}: Web application framework
+    \item \textbf{bcrypt}: Password hashing library (10 salt rounds)
+    \item \textbf{express-session}: Session management middleware
+    \item \textbf{mysql2}: MySQL database driver
+    \item \textbf{cors}: Cross-Origin Resource Sharing middleware
+    \item \textbf{dotenv}: Environment variable management
+\end{itemize}
+
+\subsection{Database}
+\begin{itemize}
+    \item \textbf{MySQL 5.7+}: Relational database management system
+\end{itemize}
+
+\section{System Architecture}
+
+\subsection{Architecture Overview}
+FitTrackr follows a three-tier architecture:
+\begin{enumerate}
+    \item \textbf{Presentation Layer}: HTML, CSS, JavaScript (Frontend)
+    \item \textbf{Application Layer}: Node.js, Express.js (Backend API)
+    \item \textbf{Data Layer}: MySQL Database
+\end{enumerate}
+
+\subsection{Project Structure}
+\begin{lstlisting}[language=bash]
+FitTrackr/
+├── backend/
+│   ├── config/
+│   │   └── db.js              # Database connection
+│   ├── server.js              # Express server
+│   ├── schema.sql             # Database schema
+│   ├── package.json           # Dependencies
+│   └── .env                   # Environment variables
+└── frontend/
+    ├── js/
+    │   ├── signup.js          # Signup logic
+    │   ├── login.js           # Login logic
+    │   └── dashboard.js       # Dashboard logic
+    ├── index.html             # Landing page
+    ├── signup.html            # Registration page
+    ├── login.html             # Login page
+    └── dashboard.html         # User dashboard
+\end{lstlisting}
+
+\section{Database Design}
+
+\subsection{Database Schema}
+The application uses two main tables:
+
+\subsubsection{Users Table}
+\begin{lstlisting}[language=SQL]
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\end{lstlisting}
+
+\subsubsection{Progress Table}
+\begin{lstlisting}[language=SQL]
+CREATE TABLE progress (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  weight INT,
+  calories INT,
+  steps INT,
+  date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) 
+    ON DELETE CASCADE
+);
+\end{lstlisting}
+
+\subsection{Entity Relationship}
+\begin{itemize}
+    \item One user can have multiple progress records (One-to-Many)
+    \item Foreign key constraint ensures referential integrity
+    \item CASCADE delete removes progress records when user is deleted
+\end{itemize}
+
+\section{Backend Implementation}
+
+\subsection{API Endpoints}
+The backend provides four RESTful API endpoints:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+POST & /signup & Register new user \\
+POST & /login & Authenticate user \\
+GET & /dashboard & Get user data (protected) \\
+GET & /logout & Destroy user session \\
+\hline
+\end{tabular}
+\caption{API Endpoints}
+\end{table}
+
+\subsection{Authentication Flow}
+
+\subsubsection{User Registration}
+\begin{enumerate}
+    \item Client sends POST request with name, email, password
+    \item Server validates input data
+    \item Check for duplicate email in database
+    \item Hash password using bcrypt (10 rounds)
+    \item Insert user record into database
+    \item Return success response
+\end{enumerate}
+
+\subsubsection{User Login}
+\begin{enumerate}
+    \item Client sends POST request with email, password
+    \item Server queries database for user by email
+    \item Compare provided password with stored hash using bcrypt
+    \item Create session and store user ID
+    \item Return user data and success response
+\end{enumerate}
+
+\subsection{Security Implementation}
+
+\subsubsection{Password Security}
+\begin{itemize}
+    \item Passwords hashed using bcrypt with 10 salt rounds
+    \item Plain text passwords never stored in database
+    \item One-way hashing prevents password recovery
+\end{itemize}
+
+\subsubsection{SQL Injection Prevention}
+\begin{itemize}
+    \item Parameterized queries used throughout
+    \item User input sanitized before database operations
+    \item mysql2 library provides built-in protection
+\end{itemize}
+
+\subsubsection{Session Management}
+\begin{itemize}
+    \item HTTP-only cookies prevent XSS attacks
+    \item Session data stored server-side
+    \item 24-hour session expiration
+\end{itemize}
+
+\section{Frontend Implementation}
+
+\subsection{User Interface Design}
+
+\subsubsection{Landing Page}
+\begin{itemize}
+    \item Clean, centered layout with gradient background
+    \item Two call-to-action buttons: "Get Started" and "Login"
+    \item Fade-in animation on page load
+\end{itemize}
+
+\subsubsection{Signup Page}
+\begin{itemize}
+    \item Three input fields: Name, Email, Password
+    \item Floating labels with smooth transitions
+    \item Real-time validation with inline error messages
+    \item Loading spinner during API request
+    \item Toast notifications for success/error feedback
+\end{itemize}
+
+\subsubsection{Login Page}
+\begin{itemize}
+    \item Two input fields: Email, Password
+    \item Similar design to signup for consistency
+    \item Real-time validation
+    \item Smooth redirect to dashboard on success
+\end{itemize}
+
+\subsubsection{Dashboard}
+\begin{itemize}
+    \item Navigation bar with logout button
+    \item Personalized welcome message
+    \item Three fitness tracking cards: Weight, Calories, Steps
+    \item Hover effects and animations
+    \item Responsive grid layout
+\end{itemize}
+
+\subsection{Form Validation}
+
+\subsubsection{Email Validation}
+\begin{lstlisting}[language=JavaScript]
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+\end{lstlisting}
+
+\subsubsection{Password Validation}
+\begin{itemize}
+    \item Minimum length: 6 characters
+    \item Validated on blur and submit events
+    \item Error message displayed below input field
+\end{itemize}
+
+\subsection{Animations and Transitions}
+\begin{itemize}
+    \item Page fade-in: 0.5s ease-in
+    \item Toast slide-in: 0.3s ease-out
+    \item Floating labels: 0.3s transition
+    \item Card hover: 0.3s transform and shadow
+    \item Loading spinner: 0.8s infinite rotation
+\end{itemize}
+
+\section{Features and Functionality}
+
+\subsection{Core Features}
+\begin{enumerate}
+    \item \textbf{User Registration}
+    \begin{itemize}
+        \item Secure account creation
+        \item Duplicate email prevention
+        \item Password strength validation
+    \end{itemize}
+    
+    \item \textbf{User Authentication}
+    \begin{itemize}
+        \item Secure login with bcrypt verification
+        \item Session-based authentication
+        \item Automatic session expiration
+    \end{itemize}
+    
+    \item \textbf{Dashboard}
+    \begin{itemize}
+        \item Personalized welcome message
+        \item Fitness tracking cards (Weight, Calories, Steps)
+        \item Protected route requiring authentication
+    \end{itemize}
+    
+    \item \textbf{Logout}
+    \begin{itemize}
+        \item Session destruction
+        \item Local storage cleanup
+        \item Redirect to login page
+    \end{itemize}
+\end{enumerate}
+
+\subsection{User Experience Features}
+\begin{itemize}
+    \item Real-time form validation
+    \item Toast notifications for feedback
+    \item Loading states during API calls
+    \item Smooth page transitions
+    \item Responsive design for all devices
+    \item Intuitive navigation
+\end{itemize}
+
+\section{Testing}
+
+\subsection{Testing Methodology}
+\begin{enumerate}
+    \item \textbf{Unit Testing}: Individual component testing
+    \item \textbf{Integration Testing}: API endpoint testing
+    \item \textbf{User Acceptance Testing}: End-to-end workflow testing
+\end{enumerate}
+
+\subsection{Test Cases}
+
+\subsubsection{Signup Testing}
+\begin{itemize}
+    \item Valid signup with correct data
+    \item Duplicate email rejection
+    \item Invalid email format handling
+    \item Short password rejection
+    \item Empty field validation
+\end{itemize}
+
+\subsubsection{Login Testing}
+\begin{itemize}
+    \item Successful login with valid credentials
+    \item User not found error handling
+    \item Incorrect password error handling
+    \item Invalid email format validation
+\end{itemize}
+
+\subsubsection{Dashboard Testing}
+\begin{itemize}
+    \item Authenticated user access
+    \item Unauthenticated redirect to login
+    \item Username display verification
+    \item Logout functionality
+\end{itemize}
+
+\section{Deployment}
+
+\subsection{Deployment Architecture}
+\begin{itemize}
+    \item \textbf{Backend}: Deployed on Render.com
+    \item \textbf{Frontend}: Deployed on Vercel.com
+    \item \textbf{Database}: MySQL on Railway or PlanetScale
+\end{itemize}
+
+\subsection{Environment Configuration}
+\begin{lstlisting}[language=bash]
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=fittrackr
+PORT=5000
+SESSION_SECRET=random_secret_key
+NODE_ENV=production
+\end{lstlisting}
+
+\section{Challenges and Solutions}
+
+\subsection{CORS Issues}
+\textbf{Challenge}: Cross-origin requests blocked by browser \\
+\textbf{Solution}: Configured CORS middleware to accept all origins during development
+
+\subsection{Session Management with File Protocol}
+\textbf{Challenge}: Sessions don't work with file:// protocol \\
+\textbf{Solution}: Implemented localStorage for authentication state
+
+\subsection{Password Security}
+\textbf{Challenge}: Secure password storage \\
+\textbf{Solution}: Implemented bcrypt hashing with 10 salt rounds
+
+\section{Future Enhancements}
+
+\subsection{Planned Features}
+\begin{enumerate}
+    \item Actual progress tracking with data entry forms
+    \item Data visualization with charts and graphs
+    \item Goal setting and achievement tracking
+    \item Profile management and settings
+    \item Password reset functionality
+    \item Email verification
+    \item Social login integration (Google, Facebook)
+    \item Mobile application development
+    \item Export data to CSV/PDF
+    \item Dark mode toggle
+\end{enumerate}
+
+\subsection{Technical Improvements}
+\begin{enumerate}
+    \item Migrate to TypeScript for type safety
+    \item Implement JWT authentication
+    \item Add API rate limiting
+    \item Implement Redis for session storage
+    \item Add comprehensive unit and integration tests
+    \item Set up CI/CD pipeline
+    \item Implement logging system
+    \item Add WebSocket for real-time updates
+\end{enumerate}
+
+\section{Conclusion}
+
+FitTrackr successfully demonstrates the implementation of a modern, secure web application with user authentication and a responsive interface. The project showcases best practices in:
+
+\begin{itemize}
+    \item Full-stack web development
+    \item Secure authentication and authorization
+    \item RESTful API design
+    \item Database design and management
+    \item User experience and interface design
+    \item Security implementation
+\end{itemize}
+
+The application is production-ready and can be extended with additional features to create a comprehensive fitness tracking platform. The modular architecture allows for easy maintenance and scalability.
+
+\section{References}
+
+\begin{enumerate}
+    \item Express.js Documentation: \url{https://expressjs.com/}
+    \item bcrypt Documentation: \url{https://www.npmjs.com/package/bcrypt}
+    \item TailwindCSS Documentation: \url{https://tailwindcss.com/}
+    \item MySQL Documentation: \url{https://dev.mysql.com/doc/}
+    \item Node.js Documentation: \url{https://nodejs.org/docs/}
+\end{enumerate}
+
+\appendix
+\section{Appendix A: Installation Guide}
+
+\subsection{Prerequisites}
+\begin{itemize}
+    \item Node.js v14 or higher
+    \item MySQL v5.7 or higher
+    \item Web browser (Chrome, Firefox, Edge)
+\end{itemize}
+
+\subsection{Installation Steps}
+\begin{lstlisting}[language=bash]
+# 1. Clone repository
+git clone <repository-url>
+
+# 2. Install backend dependencies
+cd backend
+npm install
+
+# 3. Configure environment
+cp .env.sample .env
+# Edit .env with your credentials
+
+# 4. Setup database
+mysql -u root -p
+source schema.sql
+
+# 5. Start backend
+npm start
+
+# 6. Open frontend
+# Open frontend/index.html in browser
+\end{lstlisting}
+
+\section{Appendix B: API Documentation}
+
+\subsection{POST /signup}
+\textbf{Request Body:}
+\begin{lstlisting}[language=json]
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+\end{lstlisting}
+
+\textbf{Response (201):}
+\begin{lstlisting}[language=json]
+{
+  "success": true,
+  "message": "User registered successfully",
+  "userId": 1
+}
+\end{lstlisting}
+
+\subsection{POST /login}
+\textbf{Request Body:}
+\begin{lstlisting}[language=json]
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+\end{lstlisting}
+
+\textbf{Response (200):}
+\begin{lstlisting}[language=json]
+{
+  "success": true,
+  "message": "Login successful",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}
+\end{lstlisting}
+
+\end{document}
